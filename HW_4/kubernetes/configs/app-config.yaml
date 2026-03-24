@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: flask-app
+data:
+  DB_HOST: "postgres-ha"
+  DB_NAME: "testdb"
+  DB_USER: "postgres"
+  APP_VERSION: "v1.0.0"
+  GUNICORN_WORKERS: "3"
+  GUNICORN_TIMEOUT: "120"

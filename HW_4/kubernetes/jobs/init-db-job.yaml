@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration
+  namespace: flask-app
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: migration
+        image: postgres:15
+        command:
+        - /bin/sh
+        - -c
+        - |
+          psql postgresql://$DB_USER:$DB_PASSWORD@postgres-ha:5432/$DB_NAME <<EOF
+          CREATE TABLE IF NOT EXISTS visits (
+            id SERIAL PRIMARY KEY,
+            visit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            pod_name TEXT
+          );
+          CREATE TABLE IF NOT EXISTS items (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+          INSERT INTO items (name) VALUES ('sample_item_1'), ('sample_item_2');
+          EOF
+        env:
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: POSTGRES_PASSWORD
+        - name: DB_NAME
+          value: "testdb"
